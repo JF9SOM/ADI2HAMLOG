@@ -1,0 +1,37 @@
+{
+  "_comment": "Defaults. Entries marked observed come from samples/sample.csv only; the real HAMLOG tables are not public (see CLAUDE.md).",
+  "timezone": "mixed",
+  "domestic_dxcc": "339",
+  "mode_map": {
+    "MFSK/FT4": "FT4",
+    "MFSK/FT8": "FT8"
+  },
+  "dxcc_code": {
+    "_comment": "DXCC entity number -> HAMLOG code (observed). Unlisted foreign entities get an empty Code and a warning.",
+    "15": "732A",
+    "54": "733A",
+    "110": "663A",
+    "135": "746A",
+    "137": "634A",
+    "150": "759A",
+    "288": "737A",
+    "291": "784A",
+    "318": "565A",
+    "327": "794A",
+    "336": "523A",
+    "375": "589A",
+    "387": "637A"
+  },
+  "dx_flag": {
+    "_comment": "Column 15 by DXCC (observed; meaning unverified). default applies to unlisted foreign entities.",
+    "domestic": "0",
+    "default": "8",
+    "375": "10"
+  },
+  "field_sources": {
+    "_comment": "Which ADIF field feeds which HAMLOG column. Observed: JCC/JCG comes from COMMENT when numeric.",
+    "name": "NAME",
+    "jcc": "COMMENT",
+    "grid": "GRIDSQUARE"
+  }
+}
