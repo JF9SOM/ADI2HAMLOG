@@ -21,13 +21,27 @@ cd ADI-CSV
 python3 -m pip install .
 ```
 
-インストールせずに使う場合は、`src/` を指定して実行できます。
+GUI も使う場合は、PySide6 を追加します(コア機能とコマンドライン版は外部ライブラリ不要のままです)。
+
+```bash
+python3 -m pip install ".[gui]"
+```
+
+インストールせずにコマンドライン版を使う場合は、`src/` を指定して実行できます。
 
 ```bash
 PYTHONPATH=src python3 -m adi2hamlog input.adi -o out.csv
 ```
 
-## 使い方
+## 使い方(GUI)
+
+```bash
+adi2hamlog-gui
+```
+
+ウィンドウに `.adi` ファイルをドロップ(またはクリックして選択)し、時刻の扱いなどを選んで「変換」を押します。出力先の既定は入力ファイルと同じ場所の `.csv` で、既存ファイルを上書きするときは確認が出ます。警告やスキップした QSO は、画面下のログに表示されます。複数ファイルをドロップした場合は先頭の 1 つだけを使います。
+
+## 使い方(コマンドライン)
 
 ```bash
 adi2hamlog input.adi -o out.csv --tz mixed
@@ -85,7 +99,19 @@ adi2hamlog input.adi -o out.csv --tz mixed
 - **Name 欄の日本語は空欄**になります(adi2csv/HAMLOG の出力に合わせた挙動)。
 - **文字数制限は Name の 12 文字以外は確認できていません。** 他の欄は切り詰めません。
 - ADIF のうち、`CNTY`・`QTH`・`STATE` などは使用しません(JCC/JCG は `COMMENT` から取ります)。取得元の切り替えは今後の課題です。
-- GUI はありません。
+- GUI は 1 ファイルずつの変換のみです。単体アプリ(`.app`/`.exe`)は下記の手順でビルドできますが、配布用の署名・公証はしていません。
+
+## 単体アプリのビルド(任意)
+
+Python を入れていない環境向けに、PyInstaller で GUI を単体アプリ化できます。**ビルドは対象の OS 上で行う必要があります**(macOS なら `.app`、Windows なら Windows 機上で `.exe`)。
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -e ".[gui]" pyinstaller
+PATH=.venv/bin:$PATH packaging/build.sh      # 結果は dist/ に出力
+```
+
+macOS での動作は確認済みですが、Windows と Linux は未確認です。
 
 ## 開発
 

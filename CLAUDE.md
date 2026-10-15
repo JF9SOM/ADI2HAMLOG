@@ -6,7 +6,8 @@ Windows 専用の既存ソフト「adi2csv」と同等の機能を、Mac / Linux
 将来 GitHub(JF9SOM アカウント)で公開する前提。
 
 - 範囲内: ADIF 読み込み、HAMLOG CSV 書き出し、CLI、設定ファイル(モード表・フィールド対応)、pytest。
-- 範囲外(後フェーズで検討): GUI(PySide6 等)、HAMLOG からの逆変換。
+- GUI(PySide6、ドラッグ&ドロップ)も範囲内(必須)。コアは外部依存なしのまま、GUI は任意の `[gui]` extra。
+- 範囲外: HAMLOG からの逆変換。
 
 ## 2. 技術方針
 - Python 3.10 以上。コアは標準ライブラリのみ(外部依存なし)。テストのみ pytest 可。
@@ -101,4 +102,4 @@ adi2csv 出力にユーザーが手作業で加えていた次の 3 点を自動
 - **フェーズ3**: 変換ロジック(時刻/TZ、日付、周波数、モード表、RST、QSL、衛星 Remarks、フィールド対応設定)+ pytest。
 - **フェーズ4**: CSV 出力(cp932/CRLF、置換警告)、CLI(`--tz` 等)、ログ。サンプル ADIF→CSV の回帰テスト。
 - **フェーズ5**: 実データでの列仕様確定・仮仕様の解消、README、既知の制限。
-- **フェーズ6(任意)**: GUI(PySide6、ドラッグ&ドロップ)。
+- **フェーズ6**(GUI は必須とユーザーが決定): PySide6 によるドラッグ&ドロップ GUI(`gui.py`、共有ロジックは `service.py`)。配布は pip の `[gui]` extra と PyInstaller 単体アプリ(`packaging/`)。macOS でのビルド・起動は確認済み、Windows/Linux は未確認。
