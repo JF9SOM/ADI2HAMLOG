@@ -1,9 +1,9 @@
-# CLAUDE.md — ADI-CSV(ADIF → Turbo HAMLOG CSV 変換ツール)
+# CLAUDE.md — ADI2HAMLOG(ADIF → Turbo HAMLOG CSV 変換ツール)
 
 ## 1. 目的と範囲
 アマチュア無線ログ形式 ADIF(.adi)を、Turbo HAMLOG にインポートできる CSV に変換する Python ツール。
 Windows 専用の既存ソフト「adi2csv」と同等の機能を、Mac / Linux / Windows で動く MIT ライセンスの OSS として実装する。
-将来 GitHub(JF9SOM アカウント)で公開する前提。
+GitHub: https://github.com/JF9SOM/ADI2HAMLOG (公開済み)。
 
 - 範囲内: ADIF 読み込み、HAMLOG CSV 書き出し、CLI、設定ファイル(モード表・フィールド対応)、pytest。
 - GUI(PySide6、ドラッグ&ドロップ)も範囲内(必須)。コアは外部依存なしのまま、GUI は任意の `[gui]` extra。
@@ -20,7 +20,7 @@ Windows 専用の既存ソフト「adi2csv」と同等の機能を、Mac / Linux
 
 ## 3. ディレクトリ構成案
 ```
-ADI-CSV/
+ADI2HAMLOG/
 ├── CLAUDE.md
 ├── README.md              # インストール/使い方/HAMLOGインポート手順/既知の制限
 ├── LICENSE                # MIT

@@ -16,8 +16,8 @@ Wavelog などが出力する ADIF を変換するときに、adi2csv では手�
 Python 3.10 以上が必要です。外部ライブラリは使いません。
 
 ```bash
-git clone <このリポジトリの URL>
-cd ADI-CSV
+git clone https://github.com/JF9SOM/ADI2HAMLOG.git
+cd ADI2HAMLOG
 python3 -m pip install .
 ```
 
