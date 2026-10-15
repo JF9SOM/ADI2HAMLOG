@@ -21,12 +21,19 @@ ROOT = Path(__file__).resolve().parent.parent
 DIST = ROOT / "dist"
 
 
+def icon_args() -> list[str]:
+    """macOS: .icns, Windows: .ico. Linux executables have no embedded icon."""
+    name = {"darwin": "icon.icns", "win32": "icon.ico"}.get(sys.platform)
+    return ["--icon", str(ROOT / "packaging" / "icon" / name)] if name else []
+
+
 def build() -> None:
     subprocess.check_call(
         [
             sys.executable, "-m", "PyInstaller", "--noconfirm", "--windowed", "--name", "adi2hamlog",
             "--paths", str(ROOT / "src"),
             "--add-data", f"{ROOT / 'src' / 'adi2hamlog' / 'data'}{os.pathsep}adi2hamlog/data",
+            *icon_args(),
             "--distpath", str(DIST), "--workpath", str(ROOT / "build"), "--specpath", str(ROOT / "build"),
             str(ROOT / "packaging" / "gui_launcher.py"),
         ],
