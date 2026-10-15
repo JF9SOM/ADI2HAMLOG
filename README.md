@@ -99,19 +99,23 @@ adi2hamlog input.adi -o out.csv --tz mixed
 - **Name 欄の日本語は空欄**になります(adi2csv/HAMLOG の出力に合わせた挙動)。
 - **文字数制限は Name の 12 文字以外は確認できていません。** 他の欄は切り詰めません。
 - ADIF のうち、`CNTY`・`QTH`・`STATE` などは使用しません(JCC/JCG は `COMMENT` から取ります)。取得元の切り替えは今後の課題です。
-- GUI は 1 ファイルずつの変換のみです。単体アプリ(`.app`/`.exe`)は下記の手順でビルドできますが、配布用の署名・公証はしていません。
+- GUI は 1 ファイルずつの変換のみです。単体アプリの署名・公証はしていません。
 
-## 単体アプリのビルド(任意)
+## 単体アプリ(Python 不要)
 
-Python を入れていない環境向けに、PyInstaller で GUI を単体アプリ化できます。**ビルドは対象の OS 上で行う必要があります**(macOS なら `.app`、Windows なら Windows 機上で `.exe`)。
+GitHub Actions が macOS(Apple Silicon)・Windows・Linux 用の GUI アプリを PyInstaller でビルドします([`.github/workflows/build.yml`](.github/workflows/build.yml))。
+
+- 手動実行: GitHub の Actions タブ → "Build apps" → Run workflow。成果物はその実行の Artifacts からダウンロードできます。
+- リリース: `v0.1.0` のようなタグを push すると、macOS 用の `.dmg`、Windows 用の zip、Linux 用の tar.gz が GitHub Releases に添付されます。
+
+> 署名・公証はしていません。macOS では、`.dmg` を開いて `adi2hamlog.app` を Applications へドラッグし、初回は右クリック →「開く」で起動します(警告が出ます)。Windows では SmartScreen の警告が出る場合があります。
+
+手元でビルドする場合は、対象の OS 上で次を実行します。
 
 ```bash
-python3 -m venv .venv
-.venv/bin/pip install -e ".[gui]" pyinstaller
-PATH=.venv/bin:$PATH packaging/build.sh      # 結果は dist/ に出力
+python3 -m pip install -e ".[gui]" pyinstaller
+python3 packaging/build.py --smoke     # 結果は dist/ に出力
 ```
-
-macOS での動作は確認済みですが、Windows と Linux は未確認です。
 
 ## 開発
 
