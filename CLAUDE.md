@@ -71,10 +71,10 @@ ADI-CSV/
 | 7 | Mode | `MODE`+`SUBMODE` の変換表(例 MFSK+FT4→FT4) | ✅ |
 | 8 | Code | DXCC 番号→HAMLOG コード表(外国局のみ。国内は空)。表にない国は空+警告 | ✅観測 13 件のみ/表は非公開 ❓ |
 | 9 | GL | `GRIDSQUARE`(無ければ空) | ✅ |
-| 10 | QSL | 通常 `J`(JARL 経由)。`QSL_RCVD=Y` かつ `QSL_RCVD_VIA=E` のとき `JEE`。`E`=電子 QSL | ✅(各文字の分解は🔶) |
+| 10 | QSL | 既定は常に `J`(JARL 経由。adi2csv 出力と一致)。HAMLOG 出力では電子 QSL 受領行が `JEE`(`E`=電子 QSL)だが、adi2csv は同条件でも `J` だった。設定 `qsl.electronic_received_jee` で `QSL_RCVD=Y`+`VIA=E` → `JEE` に切替可 | ✅ / どちらが望ましいか ❓ |
 | 11 | Name | `NAME` を大文字化・空白削除・12 文字切詰め。非 ASCII の名前は空欄 | ✅ |
-| 12 | QTH | 外国局=`CONT`。国内局=`COMMENT` が数字(JCC 4 桁/JCG 5 桁)ならその値、他は空。`CNTY`/`QTH` は未使用 | ✅ |
-| 13 | Rmks1 | 通常空。衛星時のみオプションで `SAT_NAME`(例 `RS-44`。ユーザーが手動で入れていた欄) | ✅ |
+| 12 | QTH | 外国局=`CONT`(大陸)。国内局は空。`CNTY`/`QTH` は未使用 | ✅ |
+| 13 | Rmks1 | 国内局=`COMMENT` が数字(JCC 4 桁/JCG 5 桁)ならその値(HAMLOG 出力で Rmks1 位置と確認)。衛星時はオプションで `SAT_NAME`(例 `RS-44`)を追加。両方ある場合は空白区切りで連結 | ✅ / 連結の仕方は ❓ |
 | 14 | Rmks2 | 空 | ✅ |
 | 15 | DX 区分 | 国内 `0`、外国 `8`、フィリピンのみ `10`(海外移動局? ユーザー推測) | 🔶 |
 | 16 | 識別 | 常に空(hQSL 登録印等で ADIF から判別不能。ユーザー決定) | ✅ |

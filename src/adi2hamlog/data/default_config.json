@@ -3,8 +3,10 @@
   "timezone": "mixed",
   "domestic_dxcc": "339",
   "mode_map": {
+    "_comment": "Key is MODE/SUBMODE. Unlisted: SUBMODE if present, else MODE.",
     "MFSK/FT4": "FT4",
-    "MFSK/FT8": "FT8"
+    "SSB/USB": "SSB",
+    "SSB/LSB": "SSB"
   },
   "dxcc_code": {
     "_comment": "DXCC entity number -> HAMLOG code (observed). Unlisted foreign entities get an empty Code and a warning.",
@@ -33,5 +35,42 @@
     "name": "NAME",
     "jcc": "COMMENT",
     "grid": "GRIDSQUARE"
+  },
+  "satellite": {
+    "_comment": "Satellite QSO: Freq column becomes <up>/<down> from band letters. V=VHF, U=UHF.",
+    "remarks_enabled": true,
+    "remarks_format": "{sat}",
+    "bands": {
+      "V": [
+        144.0,
+        148.0
+      ],
+      "U": [
+        420.0,
+        450.0
+      ]
+    }
+  },
+  "band_freq": {
+    "_comment": "Representative MHz when FREQ is missing.",
+    "160m": "1.9",
+    "80m": "3.5",
+    "60m": "5.3",
+    "40m": "7.1",
+    "30m": "10.1",
+    "20m": "14.1",
+    "17m": "18.1",
+    "15m": "21.1",
+    "12m": "24.9",
+    "10m": "28.1",
+    "6m": "50.1",
+    "4m": "70.2",
+    "2m": "144.1",
+    "70cm": "430.1",
+    "23cm": "1296.1"
+  },
+  "qsl": {
+    "_comment": "adi2csv output was always J even when QSL_RCVD=Y via E; HAMLOG export shows JEE for received eQSL. Set electronic_received_jee true to emit JEE.",
+    "electronic_received_jee": false
   }
 }
