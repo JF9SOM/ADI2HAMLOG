@@ -69,7 +69,7 @@ ADI2HAMLOG/
 | 3 | 時刻 | 秒を捨て `HH:MM`。国内局(DXCC=339)は JST+`J`、外国局は UTC+`U` | ✅ |
 | 4 | His | `RST_SENT` | ✅ |
 | 5 | My | `RST_RCVD` | ✅ |
-| 6 | Freq | `FREQ`(MHz)を小数 3 桁に切り捨て、末尾 0 削除。**衛星(`PROP_MODE=SAT`)は `V/U` 等** | ✅(切り捨ては🔶)/ 衛星表記の他組合せ ❓ |
+| 6 | Freq | `FREQ`(MHz)を小数 3 桁に切り捨て、末尾 0 削除。**衛星(`PROP_MODE=SAT`)は既定で `FREQ`/`FREQ_RX` の整数 MHz(`145/435`。ユーザー要望 2026-10-17)**。設定 `satellite.freq_style=band` で `V/U` 形式に切替可 | ✅(切り捨ては🔶)/ `145/435` の桁・丸め(小数切り捨て)の細部は ❓ |
 | 7 | Mode | `MODE`+`SUBMODE` の変換表(例 MFSK+FT4→FT4) | ✅ |
 | 8 | Code | DXCC 番号→HAMLOG コード表(外国局のみ。国内は空)。表にない国は空+警告 | ✅観測 13 件のみ/表は非公開 ❓ |
 | 9 | GL | `GRIDSQUARE`(無ければ空) | ✅ |
@@ -83,7 +83,7 @@ ADI2HAMLOG/
 
 ### 5.4 自動化の主目的(ユーザー要望)
 adi2csv 出力にユーザーが手作業で加えていた次の 3 点を自動化する。
-1. Freq: `145` → `V/U`(`FREQ`/`FREQ_RX` と `PROP_MODE=SAT` から)
+1. Freq: `145` → `145/435`(既定。以前は `V/U`。`FREQ`/`FREQ_RX` と `PROP_MODE=SAT` から)
 2. Mode: `MFSK` → `FT4`(`MODE`+`SUBMODE`)
 3. Remarks: 衛星名(`SAT_NAME`)を追加
 

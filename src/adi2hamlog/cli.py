@@ -23,6 +23,8 @@ def build_parser() -> argparse.ArgumentParser:
     sat.add_argument("--sat-remarks", dest="sat_remarks", action="store_true", default=None,
                      help="put the satellite name in Remarks")
     sat.add_argument("--no-sat-remarks", dest="sat_remarks", action="store_false")
+    p.add_argument("--sat-freq", choices=["mhz", "band"], default=None,
+                   help="satellite Freq column: mhz = 145/435, band = V/U (default: from config, mhz)")
     p.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     return p
 
@@ -35,7 +37,7 @@ def main(argv=None) -> int:
         print(f"error: {e}", file=sys.stderr)
         return 2
 
-    res = convert_file(args.input, args.output, cfg, Options(tz=args.tz, sat_remarks=args.sat_remarks))
+    res = convert_file(args.input, args.output, cfg, Options(tz=args.tz, sat_remarks=args.sat_remarks, sat_freq=args.sat_freq))
     for m in res.warnings:
         print(f"warning: {m}", file=sys.stderr)
     if res.error:

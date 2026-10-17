@@ -5,7 +5,7 @@ Windows 専用の adi2csv と同等の変換を、Mac / Linux / Windows で行�
 
 Wavelog などが出力する ADIF を変換するときに、adi2csv では手作業が必要だった次の点を自動化しています。
 
-- 衛星 QSO の周波数欄を `V/U` などにする
+- 衛星 QSO の周波数欄を `145/435`(または `V/U`)にする
 - モードを `MFSK`+`FT4` → `FT4` のように HAMLOG 向けにする
 - 衛星名(`RS-44` など)を Remarks 欄に入れる
 
@@ -39,7 +39,7 @@ PYTHONPATH=src python3 -m adi2hamlog input.adi -o out.csv
 adi2hamlog-gui
 ```
 
-ウィンドウに `.adi` ファイルをドロップ(またはクリックして選択)し、時刻の扱いなどを選んで「変換」を押します。出力先の既定は入力ファイルと同じ場所の `.csv` で、既存ファイルを上書きするときは確認が出ます。警告やスキップした QSO は、画面下のログに表示されます。複数ファイルをドロップした場合は先頭の 1 つだけを使います。
+ウィンドウに `.adi` ファイルをドロップ(またはクリックして選択)し、時刻の扱いなどを選んで「変換」を押します。出力先の既定は入力ファイルと同じ場所の `.csv` で、既存ファイルを上書きするときは確認が出ます。警告やスキップした QSO は、画面下のログに表示されます。時刻・衛星の周波数・衛星名・QSL の選択は、次回の起動時にも保持されます。複数ファイルをドロップした場合は先頭の 1 つだけを使います。
 
 ## 使い方(コマンドライン)
 
@@ -54,6 +54,7 @@ adi2hamlog input.adi -o out.csv --tz mixed
 | `--tz jst` | すべて JST(`J`) |
 | `--tz utc` | すべて UTC(`U`) |
 | `-c`, `--config` | 設定 JSON(既定値に上書きマージされます) |
+| `--sat-freq mhz` / `band` | 衛星 QSO の周波数欄。`mhz`(既定)は `145/435`、`band` は `V/U` |
 | `--sat-remarks` / `--no-sat-remarks` | 衛星名を Remarks に入れる/入れない(既定は設定に従い、入れる) |
 
 出力は cp932(Shift_JIS)、改行は CRLF、ヘッダ行なしの 16 列です。cp932 で表せない文字は `?` に置換し、警告を表示します。
@@ -65,7 +66,7 @@ adi2hamlog input.adi -o out.csv --tz mixed
 |---|---|
 | 日付・時刻 | `YY/MM/DD`、`HH:MM`+`J`/`U`。JST への変換で日付をまたぐ場合は日付も変換 |
 | 国内局の判定 | `DXCC=339`。DXCC が無い場合はコールサインのプレフィックスで判定 |
-| 周波数 | MHz を小数 3 桁に切り捨て。`FREQ` が無ければ `BAND` から代表周波数。衛星は `V/U`・`U/V` など |
+| 周波数 | MHz を小数 3 桁に切り捨て。`FREQ` が無ければ `BAND` から代表周波数。衛星は `145/435`(`FREQ`/`FREQ_RX` の整数 MHz。上り/下りの順)。設定で `V/U` 形式にも切替可 |
 | モード | `MODE/SUBMODE` の変換表(例 `MFSK/FT4` → `FT4`) |
 | RST | His=`RST_SENT`、My=`RST_RCVD`。符号付きは 2 桁にそろえる(`-4` → `-04`) |
 | Code(8 列目) | DXCC 番号 → HAMLOG コードの表。表にない国は空欄にして警告 |
@@ -86,7 +87,7 @@ adi2hamlog input.adi -o out.csv --tz mixed
   "mode_map": { "MFSK/JS8": "JS8" },
   "dxcc_code": { "xxx": "HAMLOG のコード" },
   "qsl": { "electronic_received_jee": true },
-  "satellite": { "remarks_enabled": false }
+  "satellite": { "remarks_enabled": false, "freq_style": "band" }
 }
 ```
 
@@ -95,7 +96,7 @@ adi2hamlog input.adi -o out.csv --tz mixed
 - **Code 表(8 列目)は不完全です。** HAMLOG の DXCC コード表は公開されておらず、実際の出力から読み取れた 13 エンティティだけを収録しています。表にない国は空欄になり、警告が出ます。設定の `dxcc_code` に追加してください。
 - **推定を含む列があります。** 15 列目(DX 区分)の値の意味、QSL 欄 `JEE` の各文字の意味、周波数の切り捨て(四捨五入ではなく)は、サンプルからの推定です。
 - **CSV の書式**(引用符なし、16 列、16 列目は空)は、実際に Turbo HAMLOG へ取り込めることを確認しています。ただし確認したのは限られた QSO(FT8・FM・CW・SSB・衛星)の範囲です。
-- **衛星の周波数表記は `V/U`・`U/V`・`V/V`・`U/U` のみ**です(VHF=144–148 MHz、UHF=420–450 MHz)。それ以外の組み合わせ(HF や L バンドなど)は MHz のまま出力し、警告を出します。
+- **衛星の周波数欄**は、既定では `FREQ`/`FREQ_RX` の整数 MHz(`145/435`)です。`V/U` 形式(`--sat-freq band`)を選んだ場合は、VHF=144–148 MHz、UHF=420–450 MHz で判定し、それ以外の組み合わせ(HF や L バンドなど)は MHz のまま出力して警告を出します。
 - **Name 欄の日本語は空欄**になります(adi2csv/HAMLOG の出力に合わせた挙動)。
 - **文字数制限は Name の 12 文字以外は確認できていません。** 他の欄は切り詰めません。
 - ADIF のうち、`CNTY`・`QTH`・`STATE` などは使用しません(JCC/JCG は `COMMENT` から取ります)。取得元の切り替えは今後の課題です。

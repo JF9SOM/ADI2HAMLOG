@@ -76,4 +76,14 @@ def test_satellite_sample_matches_hand_edited_csv(tmp_path):
     assert main([str(SAMPLES / "JF9SOM-20261011-1044.adi"), "-o", str(out)]) == 0
     got = list(csv.reader(io.StringIO(out.read_bytes().decode("cp932"))))
     assert len(got) == 11
-    assert all(r[5] == "V/U" and r[6] == "FT4" and r[12] == "RS-44" for r in got)
+    assert all(r[5] == "145/435" and r[6] == "FT4" and r[12] == "RS-44" for r in got)
+
+
+def test_cli_sat_freq_option(tmp_path):
+    src = tmp_path / "sat.adi"
+    src.write_text("<EOH><CALL:5>BD5EU<QSO_DATE:8>20261007<TIME_ON:6>082845<DXCC:3>318<MODE:3>FM"
+                   "<PROP_MODE:3>SAT<FREQ:3>145<FREQ_RX:3>435<EOR>", encoding="utf-8")
+    for opt, expect in ((None, "145/435"), ("band", "V/U"), ("mhz", "145/435")):
+        out = tmp_path / f"{opt}.csv"
+        assert main([str(src), "-o", str(out)] + (["--sat-freq", opt] if opt else [])) == 0
+        assert out.read_text(encoding="cp932").split(",")[5] == expect

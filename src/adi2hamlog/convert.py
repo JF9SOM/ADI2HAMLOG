@@ -21,10 +21,13 @@ class ConvertError(Exception):
 class Options:
     tz: str = "mixed"  # mixed: domestic JST(J) / foreign UTC(U); jst: all J; utc: all U
     sat_remarks: bool | None = None  # None = use config
+    sat_freq: str | None = None  # "mhz" (145/435) or "band" (V/U); None = use config
 
     def __post_init__(self):
         if self.tz not in ("mixed", "jst", "utc"):
             raise ValueError(f"tz must be mixed/jst/utc, got {self.tz!r}")
+        if self.sat_freq not in (None, "mhz", "band"):
+            raise ValueError(f"sat_freq must be mhz/band, got {self.sat_freq!r}")
 
 
 @dataclass
@@ -76,9 +79,26 @@ def _sat_band(mhz: str, bands: dict) -> str | None:
     return None
 
 
-def _freq(rec: dict, cfg: dict, warns: list[str]) -> str:
+def _int_mhz(value: str) -> str:
+    """Integer MHz (fraction dropped): 145.9 -> 145. Raises ValueError."""
+    try:
+        d = Decimal(value.strip()).to_integral_value(rounding=ROUND_DOWN)
+    except InvalidOperation:
+        raise ValueError(f"not a number: {value!r}") from None
+    if d <= 0:
+        raise ValueError(f"not positive: {value!r}")
+    return str(d)
+
+
+def _freq(rec: dict, cfg: dict, opts: Options, warns: list[str]) -> str:
     sat = rec.get("PROP_MODE", "").upper() == "SAT"
-    if sat and rec.get("FREQ") and rec.get("FREQ_RX"):
+    style = opts.sat_freq or cfg["satellite"]["freq_style"]
+    if sat and style == "mhz" and rec.get("FREQ") and rec.get("FREQ_RX"):
+        try:
+            return f"{_int_mhz(rec['FREQ'])}/{_int_mhz(rec['FREQ_RX'])}"
+        except ValueError as e:
+            warns.append(f"satellite frequency {e}; wrote MHz")
+    elif sat and rec.get("FREQ") and rec.get("FREQ_RX"):
         up = _sat_band(rec["FREQ"], cfg["satellite"]["bands"])
         down = _sat_band(rec["FREQ_RX"], cfg["satellite"]["bands"])
         if up and down:
@@ -175,7 +195,7 @@ def convert_qso(rec: dict, cfg: dict, opts: Options | None = None) -> Converted:
         "time": local.strftime("%H:%M") + ("J" if use_jst else "U"),
         "his": his,
         "my": my,
-        "freq": _freq(rec, cfg, warns),
+        "freq": _freq(rec, cfg, opts, warns),
         "mode": _mode(rec, cfg),
         "code": code,
         "gl": rec.get(flags["grid"], "").strip().upper(),

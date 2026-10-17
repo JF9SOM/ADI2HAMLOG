@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 try:
-    from PySide6.QtCore import Qt
+    from PySide6.QtCore import QSettings, Qt
     from PySide6.QtWidgets import (
         QApplication, QCheckBox, QComboBox, QFileDialog, QFormLayout, QHBoxLayout, QLabel,
         QLineEdit, QMessageBox, QPlainTextEdit, QPushButton, QVBoxLayout, QWidget,
@@ -24,6 +24,10 @@ TZ_CHOICES = (
     ("mixed", "国内局は JST(J)/外国局は UTC(U)"),
     ("jst", "すべて JST(J)"),
     ("utc", "すべて UTC(U)"),
+)
+SAT_FREQ_CHOICES = (
+    ("mhz", "145/435(MHz)"),
+    ("band", "V/U(バンド記号)"),
 )
 DROP_TEXT = "ここに .adi ファイルをドロップ\n(クリックで選択)"
 
@@ -54,8 +58,9 @@ class DropArea(QLabel):
 
 
 class MainWindow(QWidget):
-    def __init__(self):
+    def __init__(self, settings: QSettings | None = None):
         super().__init__()
+        self.settings = settings if settings is not None else QSettings("adi2hamlog", "adi2hamlog")
         self.setWindowTitle(f"adi2hamlog {__version__} - ADIF → HAMLOG CSV")
         self.resize(640, 560)
         self.cfg = load_config()
@@ -70,10 +75,20 @@ class MainWindow(QWidget):
         self.tz = QComboBox()
         for key, label in TZ_CHOICES:
             self.tz.addItem(label, key)
+        self.sat_freq = QComboBox()
+        for key, label in SAT_FREQ_CHOICES:
+            self.sat_freq.addItem(label, key)
+        self.sat_freq.setCurrentIndex(max(0, self.sat_freq.findData(self.cfg["satellite"]["freq_style"])))
         self.sat = QCheckBox("衛星名(SAT_NAME)を Remarks に入れる")
         self.sat.setChecked(self.cfg["satellite"]["remarks_enabled"])
         self.jee = QCheckBox("電子 QSL を受領済みなら QSL 欄を JEE にする")
         self.jee.setChecked(self.cfg["qsl"]["electronic_received_jee"])
+
+        self._restore_options()
+        self.tz.currentIndexChanged.connect(self._save_options)
+        self.sat_freq.currentIndexChanged.connect(self._save_options)
+        self.sat.toggled.connect(self._save_options)
+        self.jee.toggled.connect(self._save_options)
 
         self.convert_btn = QPushButton("変換")
         self.convert_btn.setEnabled(False)
@@ -92,6 +107,7 @@ class MainWindow(QWidget):
         form.addRow("入力", self.input_edit)
         form.addRow("出力", out_row)
         form.addRow("時刻", self.tz)
+        form.addRow("衛星の周波数", self.sat_freq)
         form.addRow("", self.sat)
         form.addRow("", self.jee)
 
@@ -102,6 +118,27 @@ class MainWindow(QWidget):
         lay.addWidget(self.status)
         lay.addWidget(self.log, 1)
         self.output_edit.textEdited.connect(lambda _: setattr(self, "_output_touched", True))
+
+    # --- remembered options ---------------------------------------------------------
+    def _restore_options(self):
+        """Apply saved choices; anything missing or invalid keeps the config default."""
+        st = self.settings
+        for combo, key in ((self.tz, "tz"), (self.sat_freq, "sat_freq")):
+            idx = combo.findData(st.value(key, None))
+            if idx >= 0:
+                combo.setCurrentIndex(idx)
+        for box, key in ((self.sat, "sat_remarks"), (self.jee, "qsl_jee")):
+            v = st.value(key, None)
+            if v in (True, False, "true", "false"):
+                box.setChecked(v in (True, "true"))
+
+    def _save_options(self, *_):
+        st = self.settings
+        st.setValue("tz", self.tz.currentData())
+        st.setValue("sat_freq", self.sat_freq.currentData())
+        st.setValue("sat_remarks", self.sat.isChecked())
+        st.setValue("qsl_jee", self.jee.isChecked())
+        st.sync()
 
     # --- input / output selection -------------------------------------------------
     def set_input(self, path, extra=0):
@@ -129,7 +166,8 @@ class MainWindow(QWidget):
 
     # --- conversion -----------------------------------------------------------------
     def current_options(self) -> Options:
-        return Options(tz=self.tz.currentData(), sat_remarks=self.sat.isChecked())
+        return Options(tz=self.tz.currentData(), sat_remarks=self.sat.isChecked(),
+                       sat_freq=self.sat_freq.currentData())
 
     def current_config(self) -> dict:
         cfg = load_config()
@@ -152,7 +190,8 @@ class MainWindow(QWidget):
             self.log.appendPlainText(f"エラー: {res.error}")
             self.status.setText("変換できませんでした")
         else:
-            msg = f"{res.written} 件を書き出しました → {res.output}"
+            msg = f"{res.written} 件を書き出しました → {res.output.name}"
+            self.status.setToolTip(str(res.output))
             if res.skipped:
                 msg += f"({res.skipped} 件スキップ)"
             self.status.setText(msg)

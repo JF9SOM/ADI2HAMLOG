@@ -70,16 +70,38 @@ def test_freq_from_band_when_missing_warns():
     assert c.row[5] == "7.1" and c.warnings
 
 
-def test_satellite_freq_and_remarks():
+BAND = Options(sat_freq="band")
+
+
+def test_satellite_freq_default_is_integer_mhz():
     c = conv(DXCC="318", PROP_MODE="SAT", FREQ="145.9", FREQ_RX="435.1", SAT_NAME="RS-44",
              MODE="MFSK", SUBMODE="FT4")
-    assert c.row[5] == "V/U" and c.row[6] == "FT4" and c.row[12] == "RS-44"
-    assert conv(PROP_MODE="SAT", FREQ="435.1", FREQ_RX="145.9").row[5] == "U/V"
+    assert c.row[5] == "145/435" and c.row[6] == "FT4" and c.row[12] == "RS-44"
+    assert conv(PROP_MODE="SAT", FREQ="435", FREQ_RX="145").row[5] == "435/145"
+    assert conv(PROP_MODE="SAT", FREQ="29.4", FREQ_RX="145.9").row[5] == "29/145"
+    assert conv(PROP_MODE="SAT", FREQ="1296.2", FREQ_RX="435").row[5] == "1296/435"
 
 
-def test_satellite_unknown_bands_falls_back_to_mhz():
-    c = conv(PROP_MODE="SAT", FREQ="29.4", FREQ_RX="145.9")
+def test_satellite_freq_band_style():
+    c = conv(BAND, PROP_MODE="SAT", FREQ="145.9", FREQ_RX="435.1")
+    assert c.row[5] == "V/U"
+    assert conv(BAND, PROP_MODE="SAT", FREQ="435.1", FREQ_RX="145.9").row[5] == "U/V"
+
+
+def test_satellite_band_style_unknown_bands_falls_back_to_mhz():
+    c = conv(BAND, PROP_MODE="SAT", FREQ="29.4", FREQ_RX="145.9")
     assert c.row[5] == "29.4" and c.warnings
+
+
+def test_satellite_without_rx_uses_plain_frequency():
+    assert conv(PROP_MODE="SAT", FREQ="145.9").row[5] == "145.9"
+
+
+def test_sat_freq_option_validated_and_config_default():
+    with pytest.raises(ValueError):
+        Options(sat_freq="x")
+    cfg = {**CFG, "satellite": {**CFG["satellite"], "freq_style": "band"}}
+    assert convert_qso(rec(PROP_MODE="SAT", FREQ="145.9", FREQ_RX="435.1"), cfg).row[5] == "V/U"
 
 
 def test_satellite_remarks_can_be_disabled():

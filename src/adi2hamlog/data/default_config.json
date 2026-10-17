@@ -37,7 +37,8 @@
     "grid": "GRIDSQUARE"
   },
   "satellite": {
-    "_comment": "Satellite QSO: Freq column becomes <up>/<down> from band letters. V=VHF, U=UHF.",
+    "_comment": "Satellite QSO Freq column. freq_style: 'mhz' -> <FREQ>/<FREQ_RX> as integer MHz (145/435); 'band' -> band letters (V/U) using the ranges in bands.",
+    "freq_style": "mhz",
     "remarks_enabled": true,
     "remarks_format": "{sat}",
     "bands": {
